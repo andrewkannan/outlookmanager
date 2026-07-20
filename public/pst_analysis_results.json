@@ -1,0 +1,17 @@
+[
+  {
+    "title": "Vendor Quotes & Procurement",
+    "color": "#8b5cf6",
+    "reason": "You frequently receive emails regarding hardware quotes, vendor negotiations, and invoices from external suppliers like Dell and Cisco."
+  },
+  {
+    "title": "HR Onboarding",
+    "color": "#14b8a6",
+    "reason": "There are recurring emails from HR requesting laptop provisions and account creations for new hires."
+  },
+  {
+    "title": "General IT Inquiries",
+    "color": "#6366f1",
+    "reason": "A large volume of historical emails relate to general internal staff inquiries and IT support."
+  }
+]
