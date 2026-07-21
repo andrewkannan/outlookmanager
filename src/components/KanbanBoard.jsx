@@ -397,8 +397,49 @@ export const KanbanBoard = () => {
                 account: accounts[0]
             });
 
+            const userEmail = accounts[0].username;
+
             for (let i = 0; i < pendingEmails.length; i += batchSize) {
-                const batch = pendingEmails.slice(i, i + batchSize);
+                let batch = pendingEmails.slice(i, i + batchSize);
+                
+                // --- Check threads for user replies ---
+                const threadChecks = await Promise.all(batch.map(async (email) => {
+                    try {
+                        const thread = await getConversation(tokenResponse.accessToken, email.conversationId);
+                        if (thread && thread.length > 0) {
+                            const latestMessage = thread[0];
+                            const isSentToSelf = latestMessage.toRecipients?.length === 1 && latestMessage.toRecipients[0].emailAddress.address === userEmail;
+                            if (latestMessage.from?.emailAddress?.address === userEmail && !isSentToSelf) {
+                                return { email, latestMessage };
+                            }
+                        }
+                    } catch(e) { console.error(e); }
+                    return null;
+                }));
+
+                for (const check of threadChecks) {
+                    if (check) {
+                        const { email, latestMessage } = check;
+                        const { status, tokens: replyTokens } = await analyzeUserReply(latestMessage.bodyPreview);
+                        totalTokens += replyTokens;
+                        
+                        if (status !== COLUMNS.TASK.id) {
+                            const emailIdx = newEmails.findIndex(e => e.id === email.id);
+                            if (emailIdx > -1) {
+                                newEmails[emailIdx].boardCategory = status;
+                                hasChanges = true;
+                                totalMoved++;
+                                const subjectSnippet = email.subject ? (email.subject.length > 40 ? email.subject.substring(0, 40) + '...' : email.subject) : 'No Subject';
+                                detailsLog.push(`- (Thread Reply) Moved "${subjectSnippet}" to ${status}`);
+                                updateEmailCategory(tokenResponse.accessToken, email.id, status).catch(console.error);
+                                manualOverridesRef.current.set(email.id, { category: status, timestamp: Date.now() });
+                            }
+                            batch = batch.filter(b => b.id !== email.id);
+                        }
+                    }
+                }
+                
+                if (batch.length === 0) continue;
                 const { categories: categoryMap, tokens } = await categorizeEmailsAI(batch, activeColumns, customAiRules);
                 totalTokens += tokens;
 
