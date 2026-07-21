@@ -865,7 +865,12 @@ export const KanbanBoard = () => {
                                                 <span style={{ color: 'var(--text-muted)' }}>{new Date(msg.receivedDateTime).toLocaleString()}</span>
                                             </div>
                                             {msg.body?.contentType === 'html' ? (
-                                                <div dangerouslySetInnerHTML={{ __html: msg.body.content }} style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }} className="email-body" />
+                                                <iframe 
+                                                    srcDoc={msg.body.content} 
+                                                    title="email-body"
+                                                    style={{ width: '100%', minHeight: '500px', border: 'none', background: 'white', borderRadius: '4px', marginTop: '0.5rem' }}
+                                                    sandbox="allow-same-origin allow-popups"
+                                                />
                                             ) : (
                                                 <div style={{ whiteSpace: 'pre-wrap', fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
                                                     {(msg.body?.content || msg.bodyPreview || "")
