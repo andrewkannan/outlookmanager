@@ -469,16 +469,12 @@ export const KanbanBoard = () => {
         );
         setEmails(updatedEmails);
         
-        // Ensure manual moves persist
-        const newManual = [...latestCategories];
-        const existingIdx = newManual.findIndex(c => c.id === teachEmail.id);
-        if (existingIdx > -1) {
-            newManual[existingIdx].category = teachTarget;
-        } else {
-            newManual.push({ id: teachEmail.id, category: teachTarget, manual: true });
+        // Update historical reference so Auto-Pilot doesn't revert it
+        const histIndex = historicalEmailsRef.current.findIndex(e => e.id === teachEmail.id);
+        if (histIndex > -1) {
+            historicalEmailsRef.current[histIndex].categories = [teachTarget];
+            historicalEmailsRef.current[histIndex].boardCategory = teachTarget;
         }
-        setLatestCategories(newManual);
-        localStorage.setItem('latestCategories', JSON.stringify(newManual));
 
         try {
             const response = await instance.acquireTokenSilent(loginRequest);
@@ -634,6 +630,13 @@ export const KanbanBoard = () => {
         const emailIndex = newEmails.findIndex(e => e.id === draggableId);
         newEmails[emailIndex].boardCategory = destination.droppableId;
         setEmails(newEmails);
+
+        // Update historical reference so Auto-Pilot doesn't revert it
+        const histIndex = historicalEmailsRef.current.findIndex(e => e.id === draggableId);
+        if (histIndex > -1) {
+            historicalEmailsRef.current[histIndex].categories = [destination.droppableId];
+            historicalEmailsRef.current[histIndex].boardCategory = destination.droppableId;
+        }
 
         // Update in Microsoft Graph
         try {
