@@ -449,6 +449,49 @@ export const KanbanBoard = () => {
         }
     };
 
+    const handleSaveTeachRule = async () => {
+        if (!teachCondition || !teachTarget || !teachEmail) return;
+
+        // Update custom rules
+        const currentRule = customAiRules[teachTarget] || '';
+        const newRule = currentRule ? `${currentRule} ALSO: If ${teachCondition}, assign to this category.` : `If ${teachCondition}, assign to this category.`;
+        setCustomAiRules(prev => ({
+            ...prev,
+            [teachTarget]: newRule
+        }));
+
+        // Move email locally
+        const updatedEmails = emails.map(e => 
+            e.id === teachEmail.id ? { ...e, boardCategory: teachTarget } : e
+        );
+        setEmails(updatedEmails);
+        
+        // Ensure manual moves persist
+        const newManual = [...latestCategories];
+        const existingIdx = newManual.findIndex(c => c.id === teachEmail.id);
+        if (existingIdx > -1) {
+            newManual[existingIdx].category = teachTarget;
+        } else {
+            newManual.push({ id: teachEmail.id, category: teachTarget, manual: true });
+        }
+        setLatestCategories(newManual);
+        localStorage.setItem('latestCategories', JSON.stringify(newManual));
+
+        try {
+            const response = await instance.acquireTokenSilent(loginRequest);
+            await updateEmailCategory(response.accessToken, teachEmail.id, teachTarget);
+            logAction("AI Trained", 0, `Added new rule to ${teachTarget}`);
+        } catch (error) {
+            console.error(error);
+        }
+
+        // Close modal
+        setShowTeachModal(false);
+        setTeachCondition("");
+        setTeachTarget("");
+        setTeachEmail(null);
+    };
+
     const handleSaveManualTask = () => {
         if (!newTaskSubject.trim() || !newTaskTargetCol) return;
         
