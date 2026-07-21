@@ -19,7 +19,9 @@ const TASK_SUBCATEGORIES = {
     'Renewals': '#f59e0b',
     'Vendor Quotes & Procurement': '#8b5cf6',
     'HR Onboarding': '#14b8a6',
-    'General IT Inquiries': '#6366f1'
+    'General IT Inquiries': '#6366f1',
+    'BD': '#db2777',
+    'WAC': '#ea580c'
 };
 
 export const KanbanBoard = () => {
@@ -146,6 +148,13 @@ export const KanbanBoard = () => {
             return Array.from(conversationsMap.values()).map(conv => {
                 let category = COLUMNS.INBOX.id;
                 let subCategory = conv.allCategories.find(c => Object.keys(TASK_SUBCATEGORIES).includes(c));
+                
+                const senderString = `${conv.from?.emailAddress?.name || ''} ${conv.from?.emailAddress?.address || ''}`.toLowerCase();
+                if (/pauline|adeline|serena/.test(senderString)) {
+                    subCategory = 'BD';
+                } else if (/joanne|junnian|wong en qian/.test(senderString)) {
+                    subCategory = 'WAC';
+                }
                 
                 const matchedCategory = conv.latestCategories.find(c => currentCols.some(col => col.id === c) || c === 'To Reply');
                 
