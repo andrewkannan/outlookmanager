@@ -7,7 +7,7 @@ export const DEFAULT_AI_RULES = {
     'To Reply': 'Emails that clearly require a response.',
     'Done': '1) Purely informational/spam. 2) COMPLETION CONFIRMATIONS: Any email saying "verified and updated", "done", "completed", or "noted" MUST be assigned to "Done", even if it mentions Andrew or Dibin.',
     'Inbox': 'Use this ONLY if you are completely unsure or it doesn\'t fit the others.',
-    'System Logs': 'Routine automated system logs, successful backups, standard notifications, etc. that do NOT indicate a problem.',
+    'System Logs': 'Routine automated system logs, successful backups, standard notifications, "Message Recalled" emails, etc. that do NOT indicate a problem.',
     'System Alerts': 'Automated system emails that indicate an ERROR, FAILURE, ABNORMAL behavior, or require attention (e.g. HL7 Alerts, ADVAPACS reports).'
 };
 
