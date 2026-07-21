@@ -407,9 +407,10 @@ export const KanbanBoard = () => {
                     try {
                         const thread = await getConversation(tokenResponse.accessToken, email.conversationId);
                         if (thread && thread.length > 0) {
-                            const latestMessage = thread[0];
-                            const isSentToSelf = latestMessage.toRecipients?.length === 1 && latestMessage.toRecipients[0].emailAddress.address === userEmail;
-                            if (latestMessage.from?.emailAddress?.address === userEmail && !isSentToSelf) {
+                            const latestMessage = thread[thread.length - 1];
+                            const sender = latestMessage.from?.emailAddress?.address?.toLowerCase();
+                            const isSentToSelf = latestMessage.toRecipients?.length === 1 && latestMessage.toRecipients[0].emailAddress.address?.toLowerCase() === userEmail.toLowerCase();
+                            if (sender === userEmail.toLowerCase() && !isSentToSelf) {
                                 return { email, latestMessage };
                             }
                         }
