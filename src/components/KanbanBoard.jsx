@@ -31,6 +31,7 @@ export const KanbanBoard = () => {
     const [autoPilotActive, setAutoPilotActive] = useState(true);
     const isProcessingRef = React.useRef(false);
     const historicalEmailsRef = React.useRef([]);
+    const manualOverridesRef = React.useRef(new Map());
     const [scanResults, setScanResults] = useState(null);
     const [showLogs, setShowLogs] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -152,6 +153,14 @@ export const KanbanBoard = () => {
                     category = matchedCategory === 'To Reply' ? COLUMNS.TASK.id : matchedCategory;
                 } else if (subCategory) {
                     category = COLUMNS.TASK.id;
+                }
+                
+                // Eventual consistency override
+                if (manualOverridesRef.current) {
+                    const override = manualOverridesRef.current.get(conv.id);
+                    if (override && (Date.now() - override.timestamp < 300000)) { // 5 minutes
+                        category = override.category;
+                    }
                 }
                 
                 return { ...conv, boardCategory: category, subCategory: subCategory };
@@ -463,6 +472,8 @@ export const KanbanBoard = () => {
             [teachTarget]: newRule
         }));
 
+        manualOverridesRef.current.set(teachEmail.id, { category: teachTarget, timestamp: Date.now() });
+
         // Move email locally
         const updatedEmails = emails.map(e => 
             e.id === teachEmail.id ? { ...e, boardCategory: teachTarget } : e
@@ -624,6 +635,8 @@ export const KanbanBoard = () => {
             localStorage.setItem('manualTasks', JSON.stringify(newTasks));
             return;
         }
+
+        manualOverridesRef.current.set(draggableId, { category: destination.droppableId, timestamp: Date.now() });
 
         // Update local state immediately for snappy UI
         const newEmails = Array.from(emails);
