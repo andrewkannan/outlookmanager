@@ -30,6 +30,7 @@ export const KanbanBoard = () => {
     const [isScanning, setIsScanning] = useState(false);
     const [autoPilotActive, setAutoPilotActive] = useState(true);
     const isProcessingRef = React.useRef(false);
+    const historicalEmailsRef = React.useRef([]);
     const [scanResults, setScanResults] = useState(null);
     const [showLogs, setShowLogs] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -165,6 +166,7 @@ export const KanbanBoard = () => {
                 const histRes = await fetch('/historical_emails.json');
                 if (histRes.ok) historicalEmails = await histRes.json();
             } catch(e) { console.error("Could not load historical emails", e); }
+            historicalEmailsRef.current = historicalEmails;
             
             const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
             
@@ -223,9 +225,10 @@ export const KanbanBoard = () => {
                     account: accounts[0]
                 });
                 const fetchedEmails = await getEmails(response.accessToken);
+                const allEmails = [...fetchedEmails, ...historicalEmailsRef.current];
                 
                 const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
-                const processedEmails = processConversations(fetchedEmails, currentCols);
+                const processedEmails = processConversations(allEmails, currentCols);
                 
                 let updatedEmails = [...processedEmails];
                 let hasChanges = false;
