@@ -64,8 +64,8 @@ export const getDeepEmails = async (accessToken) => {
     try {
         const response = await client
             .api('/me/messages')
-            .select('subject,bodyPreview,from')
-            .top(300)
+            .select('id,conversationId,subject,bodyPreview,from,toRecipients,receivedDateTime,categories,importance')
+            .top(500)
             .orderby('receivedDateTime DESC')
             .get();
         return response.value;

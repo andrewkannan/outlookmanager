@@ -178,42 +178,31 @@ export const KanbanBoard = () => {
 
     const fetchMails = async () => {
         try {
-            // Merge Historical PST Emails first for instant UI loading
-            let historicalEmails = [];
-            try {
-                const histRes = await fetch('/historical_emails.json');
-                if (histRes.ok) historicalEmails = await histRes.json();
-            } catch(e) { console.error("Could not load historical emails", e); }
-            historicalEmailsRef.current = historicalEmails;
-            
             const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
-            
-            // Render historical tasks immediately so user doesn't get stuck waiting for Auth
-            setEmails(processConversations(historicalEmails, currentCols));
-            setLoading(false);
 
-            // Fetch live Graph API emails in the background
             try {
                 const response = await instance.acquireTokenSilent({
                     ...loginRequest,
                     account: accounts[0]
                 });
-                const fetchedEmails = await getEmails(response.accessToken);
-                const allEmails = [...fetchedEmails, ...historicalEmails];
-                setEmails(processConversations(allEmails, currentCols));
+                const fetchedEmails = await getDeepEmails(response.accessToken);
+                historicalEmailsRef.current = fetchedEmails;
+                setEmails(processConversations(fetchedEmails, currentCols));
+                setLoading(false);
             } catch (authErr) {
                 console.error("Auth error fetching live emails:", authErr);
-                // If silent auth fails for any reason (timeout, interaction required), force a popup to heal the session
                 try {
                     const response = await instance.acquireTokenPopup({
                         ...loginRequest,
                         account: accounts[0]
                     });
-                    const fetchedEmails = await getEmails(response.accessToken);
-                    const allEmails = [...fetchedEmails, ...historicalEmails];
-                    setEmails(processConversations(allEmails, currentCols));
+                    const fetchedEmails = await getDeepEmails(response.accessToken);
+                    historicalEmailsRef.current = fetchedEmails;
+                    setEmails(processConversations(fetchedEmails, currentCols));
+                    setLoading(false);
                 } catch (popupErr) {
                     console.error("Popup auth also failed:", popupErr);
+                    setLoading(false);
                 }
             }
         } catch (error) {
