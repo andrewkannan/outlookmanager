@@ -1117,20 +1117,9 @@ export const KanbanBoard = () => {
                     <button className="btn btn-primary" style={{ padding: '0.8rem 2rem', fontSize: '1.1rem', background: 'var(--accent-purple)' }} onClick={() => {
                         setAuthFailed(false);
                         setLoading(true);
-                        const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
-                        instance.acquireTokenPopup({
+                        instance.loginRedirect({
                             ...loginRequest,
                             prompt: "login"
-                        }).then(response => {
-                            getDeepEmails(response.accessToken).then(fetchedEmails => {
-                                historicalEmailsRef.current = fetchedEmails;
-                                setEmails(processConversations(fetchedEmails, currentCols));
-                                setLoading(false);
-                            }).catch(err => {
-                                console.error(err);
-                                setAuthFailed(true);
-                                setLoading(false);
-                            });
                         }).catch(err => {
                             console.error(err);
                             setAuthFailed(true);
