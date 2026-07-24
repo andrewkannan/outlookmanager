@@ -132,6 +132,7 @@ export const KanbanBoard = () => {
     };
 
     const processConversations = (fetchedEmails, currentCols) => {
+            if (!fetchedEmails) return [];
             const conversationsMap = new Map();
             fetchedEmails.forEach(email => {
                 if (!conversationsMap.has(email.conversationId)) {
@@ -195,7 +196,7 @@ export const KanbanBoard = () => {
                 try {
                     const response = await instance.acquireTokenPopup({
                         ...loginRequest,
-                        account: accounts[0]
+                        prompt: "select_account"
                     });
                     const fetchedEmails = await getDeepEmails(response.accessToken);
                     historicalEmailsRef.current = fetchedEmails;
@@ -1119,7 +1120,7 @@ export const KanbanBoard = () => {
                         const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
                         instance.acquireTokenPopup({
                             ...loginRequest,
-                            account: accounts[0]
+                            prompt: "select_account"
                         }).then(response => {
                             getDeepEmails(response.accessToken).then(fetchedEmails => {
                                 historicalEmailsRef.current = fetchedEmails;
