@@ -193,20 +193,8 @@ export const KanbanBoard = () => {
                 setLoading(false);
             } catch (authErr) {
                 console.error("Auth error fetching live emails:", authErr);
-                try {
-                    const response = await instance.acquireTokenPopup({
-                        ...loginRequest,
-                        prompt: "login"
-                    });
-                    const fetchedEmails = await getDeepEmails(response.accessToken);
-                    historicalEmailsRef.current = fetchedEmails;
-                    setEmails(processConversations(fetchedEmails, currentCols));
-                    setLoading(false);
-                } catch (popupErr) {
-                    console.error("Popup auth also failed:", popupErr);
-                    setAuthFailed(true);
-                    setLoading(false);
-                }
+                setAuthFailed(true);
+                setLoading(false);
             }
         } catch (error) {
             console.error(error);
