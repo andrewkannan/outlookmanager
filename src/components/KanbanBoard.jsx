@@ -196,7 +196,7 @@ export const KanbanBoard = () => {
                 try {
                     const response = await instance.acquireTokenPopup({
                         ...loginRequest,
-                        prompt: "select_account"
+                        prompt: "login"
                     });
                     const fetchedEmails = await getDeepEmails(response.accessToken);
                     historicalEmailsRef.current = fetchedEmails;
@@ -1120,7 +1120,7 @@ export const KanbanBoard = () => {
                         const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
                         instance.acquireTokenPopup({
                             ...loginRequest,
-                            prompt: "select_account"
+                            prompt: "login"
                         }).then(response => {
                             getDeepEmails(response.accessToken).then(fetchedEmails => {
                                 historicalEmailsRef.current = fetchedEmails;
