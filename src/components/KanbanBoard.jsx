@@ -28,6 +28,7 @@ export const KanbanBoard = () => {
     const { instance, accounts } = useMsal();
     const [emails, setEmails] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [authFailed, setAuthFailed] = useState(false);
     const [isCategorizing, setIsCategorizing] = useState(false);
     const [isScanning, setIsScanning] = useState(false);
     const [autoPilotActive, setAutoPilotActive] = useState(true);
@@ -202,6 +203,7 @@ export const KanbanBoard = () => {
                     setLoading(false);
                 } catch (popupErr) {
                     console.error("Popup auth also failed:", popupErr);
+                    setAuthFailed(true);
                     setLoading(false);
                 }
             }
@@ -1104,7 +1106,41 @@ export const KanbanBoard = () => {
                 </div>
             )}
 
-            <DragDropContext onDragEnd={onDragEnd}>
+            {authFailed ? (
+                <div className="glass-panel" style={{ margin: '4rem auto', padding: '3rem', textAlign: 'center', maxWidth: '500px' }}>
+                    <h2 style={{ marginBottom: '1rem' }}>Session Expired</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                        Your connection to Microsoft 365 has expired or was blocked by the browser. 
+                        Please click below to reconnect your Outlook mailbox.
+                    </p>
+                    <button className="btn btn-primary" style={{ padding: '0.8rem 2rem', fontSize: '1.1rem', background: 'var(--accent-purple)' }} onClick={() => {
+                        setAuthFailed(false);
+                        setLoading(true);
+                        const currentCols = JSON.parse(localStorage.getItem('activeColumns')) || Object.values(COLUMNS);
+                        instance.acquireTokenPopup({
+                            ...loginRequest,
+                            account: accounts[0]
+                        }).then(response => {
+                            getDeepEmails(response.accessToken).then(fetchedEmails => {
+                                historicalEmailsRef.current = fetchedEmails;
+                                setEmails(processConversations(fetchedEmails, currentCols));
+                                setLoading(false);
+                            }).catch(err => {
+                                console.error(err);
+                                setAuthFailed(true);
+                                setLoading(false);
+                            });
+                        }).catch(err => {
+                            console.error(err);
+                            setAuthFailed(true);
+                            setLoading(false);
+                        });
+                    }}>
+                        🔗 Reconnect Outlook
+                    </button>
+                </div>
+            ) : (
+                <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable droppableId="board" type="column" direction="horizontal">
                     {(providedBoard) => (
                         <div 
@@ -1360,6 +1396,7 @@ export const KanbanBoard = () => {
                     )}
                 </Droppable>
             </DragDropContext>
+            )}
         </div>
     );
 };
